@@ -1,0 +1,32 @@
+{
+  "host": "192.168.3.243",
+  "port": 25565,
+  "username": "FridayAI",
+  "version": "1.21.11",
+  "auth": "offline",
+  "authmePassword": "CHANGE_ME",
+  "authmeAutoRegister": false,
+  "moduleRoot": "/root/mc-bot",
+  "apiHost": "127.0.0.1",
+  "apiPort": 8765,
+  "apiToken": "CHANGE_TO_A_LONG_RANDOM_TOKEN",
+  "allowParkour": false,
+  "maxDropDown": 2,
+  "reconnect": true,
+  "reconnectDelayMs": 5000,
+
+  "masters": ["your_minecraft_username"],
+
+  "llmBaseURL": "https://api.openai.com/v1",
+  "llmModel": "gpt-4o",
+  "llmApiKey": "sk-YOUR_API_KEY_HERE",
+
+  "planPath": "/root/.config/minecraft-ai/plan.json",
+  "taskPath": "/root/.config/minecraft-ai/task.txt",
+  "statePath": "/root/.config/minecraft-ai/state.json",
+  "brainLogPath": "/tmp/friday-brain.log",
+
+  "brainIdleIntervalMs": 12000,
+  "brainActiveIntervalMs": 4000,
+  "brainDangerIntervalMs": 2500
+}

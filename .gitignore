@@ -1,0 +1,11 @@
+node_modules/
+.DS_Store
+*.log
+__pycache__/
+*.pyc
+.env
+config.json
+brain.lock
+plan.json
+state.json
+task.txt
