@@ -35,6 +35,7 @@ const API_HOST = cfg.apiHost || '127.0.0.1'
 const API_PORT = Number(cfg.apiPort || 8765)
 const API_TOKEN = cfg.apiToken || ''
 const PLAN_PATH = cfg.planPath || '/root/.config/minecraft-ai/plan.json'
+const PLAYBOOK_PATH = cfg.playbookPath || '/root/.config/minecraft-ai/playbook.json'
 const TASK_PATH = cfg.taskPath || '/root/.config/minecraft-ai/task.txt'
 const LOCK_PATH = cfg.brainLockPath || '/root/.config/minecraft-ai/brain.lock'
 const LOG_PATH = cfg.brainLogPath || '/tmp/friday-brain.log'
@@ -116,6 +117,113 @@ function savePlan(plan) {
     if (plan.notes.length > 20) plan.notes = plan.notes.slice(-20)
     fs.writeFileSync(PLAN_PATH, JSON.stringify(plan, null, 2))
   } catch (e) { log('savePlan failed:', e.message) }
+}
+
+// ---------------- 战术知识库与自我进化引擎 (Playbook) ----------------
+function defaultPlaybook() {
+  return { version: 1, updatedAt: new Date().toISOString(), tactics: [], microSkills: [] }
+}
+
+function loadPlaybook() {
+  try {
+    if (!fs.existsSync(PLAYBOOK_PATH)) return defaultPlaybook()
+    return Object.assign(defaultPlaybook(), JSON.parse(fs.readFileSync(PLAYBOOK_PATH, 'utf8')))
+  } catch (_) { return defaultPlaybook() }
+}
+
+function savePlaybook(pb) {
+  try {
+    pb.updatedAt = new Date().toISOString()
+    if (Array.isArray(pb.tactics) && pb.tactics.length > 50) pb.tactics = pb.tactics.slice(-50)
+    fs.writeFileSync(PLAYBOOK_PATH, JSON.stringify(pb, null, 2))
+  } catch (e) { log('savePlaybook failed:', e.message) }
+}
+
+// 导师 AI 自动反思与归档引擎
+async function evaluateAndArchiveExperience(stuckEvent, recoveryResult) {
+  try {
+    log(`[Supervisor-AI] 启动卡点评估与归档反思: ${stuckEvent.action} -> ${stuckEvent.errorClass}`)
+    const prompt = `你是 FridayAI 的资深 MC 导师与裁判 (Critic)。
+学徒 Friday 刚才在游戏中遇到了卡点/失败，并尝试了破局动作。
+【卡点现场】
+动作: ${JSON.stringify(stuckEvent.action)}
+报错: ${stuckEvent.error}
+错误类型: ${stuckEvent.errorClass}
+当时环境: HP=${stuckEvent.hp}, Food=${stuckEvent.food}, Pos=(${stuckEvent.x},${stuckEvent.y},${stuckEvent.z})
+
+【破局尝试与物理回执】
+破局动作: ${JSON.stringify(recoveryResult.action)}
+执行结果: ${recoveryResult.ok ? '成功 (OK)' : '失败 (FAIL)'}
+物理数据: ${JSON.stringify(recoveryResult.result || recoveryResult.error || {})}
+
+请以严谨客观的裁判视角做出裁决：
+1. 本次尝试是否真正化解了危机或取得了实质性物理进展（位移/资源获得/消除障碍）？
+2. 如果成功且具有通用沙盒价值，请总结 1 条精炼的【战术经验规则 (tactic)】或【微脚本建议】归档进经验库。
+3. 如果依然失败，请提炼 1 条【避坑教训】避免重复踩坑。
+
+严格输出纯 JSON 格式：
+{
+  "verdict": "SUCCESS_ARCHIVE | FAILURE_AVOID | IGNORE",
+  "reason": "判断依据与物理事实对比",
+  "tactic": {
+    "situation": "触发情境摘要",
+    "rule": "具体且可执行的应对策略"
+  } 或 null,
+  "microSkill": {
+    "name": "微技能标识符",
+    "description": "说明",
+    "steps": [{"type":"...", "args":{...}}]
+  } 或 null
+}`
+
+    const res = await llmChat([{ role: 'user', content: prompt }], { temperature: 0.2, timeoutMs: 35000 })
+    const jsonMatch = res.content.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) return
+    const review = JSON.parse(jsonMatch[0])
+    log(`[Supervisor-AI] 导师裁决: ${review.verdict} —— ${review.reason || ''}`)
+
+    if (review.verdict === 'SUCCESS_ARCHIVE' && review.tactic && review.tactic.rule) {
+      const pb = loadPlaybook()
+      const existing = pb.tactics.find(t => t.situation === review.tactic.situation || t.rule === review.tactic.rule)
+      if (existing) {
+        existing.successCount = (existing.successCount || 1) + 1
+      } else {
+        pb.tactics.push({
+          id: `tactic-${Date.now().toString(36)}`,
+          situation: String(review.tactic.situation).slice(0, 100),
+          rule: String(review.tactic.rule).slice(0, 200),
+          successCount: 1,
+          failCount: 0,
+          learnedAt: new Date().toISOString()
+        })
+      }
+      if (review.microSkill && review.microSkill.name && Array.isArray(review.microSkill.steps)) {
+        pb.microSkills = pb.microSkills.filter(s => s.name !== review.microSkill.name)
+        pb.microSkills.push({
+          name: review.microSkill.name,
+          description: review.microSkill.description || '',
+          steps: review.microSkill.steps.slice(0, 6)
+        })
+        log(`[Supervisor-AI] ★ 新增固化微技能: ${review.microSkill.name}`)
+      }
+      savePlaybook(pb)
+      log(`[Supervisor-AI] ★ 战术经验成功归档进 Playbook 知识库！当前共 ${pb.tactics.length} 条战术。`)
+    } else if (review.verdict === 'FAILURE_AVOID' && review.tactic && review.tactic.rule) {
+      const pb = loadPlaybook()
+      pb.tactics.push({
+        id: `avoid-${Date.now().toString(36)}`,
+        situation: String(review.tactic.situation).slice(0, 100),
+        rule: `【禁忌/避坑】${String(review.tactic.rule).slice(0, 180)}`,
+        successCount: 0,
+        failCount: 1,
+        learnedAt: new Date().toISOString()
+      })
+      savePlaybook(pb)
+      log(`[Supervisor-AI] 登记避坑教训到 Playbook: ${review.tactic.rule}`)
+    }
+  } catch (err) {
+    log('[Supervisor-AI error]', err.message)
+  }
 }
 
 // ---------------- LLM ----------------
@@ -424,11 +532,19 @@ ${plan.lastReflexion}
 ⚠ 请注意：上一轮执行触发了上述具体断言异常！你必须在此次决策中针对该失败根因重新调整规划，绝不允许使用相同错误参数！\n
 ` : ''
 
+  // 挂载动态进化的战术手册 (Playbook)
+  const pb = loadPlaybook()
+  const tacticsList = (pb.tactics || []).slice(-8).map(t => `- [${t.situation}]: ${t.rule}`).join('\n')
+  const playbookBlock = tacticsList ? `
+===== 经实战检验的进化战术手册 (Evolved Playbook) =====
+${tacticsList}
+(以上是你和导师在历史实战中沉淀的有效经验，遇到类似情境优先采纳，避免重蹈覆辙)\n` : ''
+
   const lastChest = (obs.memory && obs.memory.lastChest) || null
   const chestStr = lastChest ? `已知箱子库存 (坐标: ${lastChest.pos ? JSON.stringify(lastChest.pos) : '附近'}): ${lastChest.summary || '(空)'}` : ''
   const absentItems = (plan.absentChestItems && plan.absentChestItems.length) ? `【箱子黑名单 (实测绝对不存在，严禁尝试取出)】: ${plan.absentChestItems.join(', ')}` : ''
 
-  return `${reflexionBlock}===== 当前语义观察 =====
+  return `${reflexionBlock}${playbookBlock}===== 当前语义观察 =====
 你在: (${s.position ? `${s.position.x}, ${s.position.y}, ${s.position.z}` : '?'})  维度: ${s.dimension || '?'}
 生命: ${s.health}/20   饱食: ${s.food}/20   手持: ${s.heldItem ? s.heldItem.name : '空手'}
 时间: ${s.time ? (s.time.isDay ? '白天' : '夜晚') + `(timeOfDay=${s.time.timeOfDay})` : '?'}
@@ -1044,10 +1160,29 @@ async function round() {
       })
       plan.lastVerifyAt = null
       savePlan(plan)
+
+      // === 导师 AI 实时裁决与进化联动 ===
       if (!ok) {
+        // 记录卡点事件，存入全局变量供破局尝试后评估
+        global.__lastStuckEvent = {
+          action: executable,
+          error: String(res.error || '').slice(0, 200),
+          errorClass: errorClass(res.error),
+          hp: (obs.self && obs.self.health) || 20,
+          food: (obs.self && obs.self.food) || 20,
+          x: Math.round((obs.self && obs.self.position && obs.self.position.x) || 0),
+          y: Math.round((obs.self && obs.self.position && obs.self.position.y) || 0),
+          z: Math.round((obs.self && obs.self.position && obs.self.position.z) || 0),
+          at: Date.now()
+        }
         // 某一步失败就停止整批：后面的步骤很可能建立在错误前提上
         log(`  [plan] 第 ${i + 1} 步失败，停止后续步骤并交回模型重规划`)
         break
+      } else if (global.__lastStuckEvent && (Date.now() - global.__lastStuckEvent.at < 90000)) {
+        // 上一步刚经历了卡点，而这一步成功突破了！异步唤起导师 AI 进行裁判与归档
+        const stuck = global.__lastStuckEvent
+        global.__lastStuckEvent = null
+        evaluateAndArchiveExperience(stuck, { action: executable, ok: true, result: res.result }).catch(() => {})
       }
 
       // 每步后轻量复核真实世界。出现危险，或该步骤未声明 batchSafe，就停止并重新规划。

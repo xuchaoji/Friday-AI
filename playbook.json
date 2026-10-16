@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "updatedAt": "2026-10-16T15:00:00.000Z",
+  "tactics": [
+    {
+      "id": "tactic-water-pocket-bypass",
+      "situation": "下潜或采矿遇含水层/暗流(water near)阻断",
+      "rule": "严禁直接穿水挖掘；先用圆石或泥土封堵出水点，转为垂直方向(如dx=0,dz=1或dx=-1)绕行3格再继续下潜",
+      "successCount": 3,
+      "failCount": 0
+    },
+    {
+      "id": "tactic-starvation-recovery",
+      "situation": "背包无现成食物且饱食度偏低",
+      "rule": "严禁在原地反复eat或开空箱子；立即前往地表开阔区hunt狩猎牛羊猪鸡并用熔炉smelt熟肉，补充到半组食物后再重返矿坑",
+      "successCount": 1,
+      "failCount": 0
+    },
+    {
+      "id": "tactic-deep-mining-anticheat",
+      "situation": "在地下(Y<50)实心岩层中需要位移",
+      "rule": "严禁地下使用flyTo或长距离穿墙飞行，会触发反作弊ECONNRESET；地下必须且仅能使用digStair、branchMine或实体步行",
+      "successCount": 5,
+      "failCount": 0
+    }
+  ],
+  "microSkills": [
+    {
+      "name": "torch_supply_chain",
+      "description": "现场就地制作火把补充照明",
+      "steps": [
+        {"type": "craftAtomic", "args": {"item": "torch", "count": 16}}
+      ]
+    }
+  ]
+}
