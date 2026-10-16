@@ -1819,7 +1819,7 @@ async function act(action = {}, parentToken = null) {
     if (cfg.allowSimulateMaster !== true) throw new Error('simulateMaster disabled by configuration')
     ensureReady()
     const text = String(a.message || '测试消息')
-    const from = String(a.from || (Array.isArray(cfg.masters) ? cfg.masters[0] : 'master'))
+    const from = String(a.from || (Array.isArray(cfg.masters) ? cfg.masters[0] : 'chaoji34'))
     const entry = { id: 'sim' + Date.now().toString(36), from, text, at: new Date().toISOString(), acked: false }
     memory.pendingInstructions.push(entry)
     memory.chatQueue.push(entry)
@@ -2864,7 +2864,9 @@ function connect() {
   bot.on('login',()=>{memory.connected=true;addMessage('system','protocol login complete'); installDoorCollisionFix(bot)})
   bot.on('spawn',async()=>{
     memory.spawned=true; mcData=mcDataLoader(bot.version); movements=new Movements(bot)
-    movements.canDig=false; movements.allow1by1towers=false; movements.allowParkour=cfg.allowParkour===true; movements.maxDropDown=Number(cfg.maxDropDown||2); movements.canOpenDoors=true
+    movements.canDig=false; movements.allow1by1towers=false; movements.allowParkour=true; movements.maxDropDown=Number(cfg.maxDropDown||4); movements.canOpenDoors=true
+    // 放宽半砖、楼梯等小高差地形的跨越惩罚，允许像原版生物一样自然滑步
+    try { movements.heuristicDelta = 0.5 } catch (_) {}
     // ---- 门通行修正 ----
     // mineflayer-pathfinder 用 boundingBox==='block' 判定"不可通行"，而门**即使开着**
     // 的 boundingBox 仍然是 'block'（只是一块 0.1875 厚的薄板）。结果是机器人永远无法
@@ -2922,6 +2924,48 @@ function connect() {
       }
       console.log('[pathfinder] 已为 pathfinder.goto 注入 8000ms 全局防卡死看门狗')
     } catch (_) {}
+
+    // ---- 仿原版怪物肌肉记忆：物理层 50ms 自动迈步与卡角自愈反射 (Auto-Step & Anti-Stuck) ----
+    let stuckTicks = 0
+    let lastPhysPos = null
+    bot.on('physicsTick', () => {
+      try {
+        if (!bot.entity || !bot.entity.position) return
+        const isMovingControl = bot.controlState.forward || bot.controlState.back || bot.controlState.left || bot.controlState.right
+        const isPathfinding = bot.pathfinder && typeof bot.pathfinder.isMoving === 'function' && bot.pathfinder.isMoving()
+        
+        if (isMovingControl || isPathfinding) {
+          if (lastPhysPos) {
+            const dx = bot.entity.position.x - lastPhysPos.x
+            const dz = bot.entity.position.z - lastPhysPos.z
+            const horizDistSq = dx * dx + dz * dz
+            
+            // 如果处于寻路/前进移动状态，但连续 6 个 tick (300ms) 水平位移几乎为 0
+            if (horizDistSq < 0.0009) {
+              stuckTicks++
+              // 触发肌肉反射：如果脚下是在地面或液体上，本能瞬时跳跃迈步
+              if (stuckTicks >= 6 && stuckTicks <= 18 && bot.entity.onGround) {
+                bot.setControlState('jump', true)
+                setTimeout(() => { try { bot.setControlState('jump', false) } catch(_) {} }, 120)
+              }
+              // 如果卡住超过 1 秒 (20 ticks)，轻微左右扭动身位摆脱卡缝
+              if (stuckTicks > 20 && stuckTicks % 10 === 0) {
+                const wiggle = (stuckTicks % 20 === 0) ? 'left' : 'right'
+                bot.setControlState(wiggle, true)
+                setTimeout(() => { try { bot.setControlState(wiggle, false) } catch(_) {} }, 100)
+              }
+            } else {
+              stuckTicks = 0
+            }
+          }
+          lastPhysPos = bot.entity.position.clone()
+        } else {
+          stuckTicks = 0
+          lastPhysPos = null
+        }
+      } catch (_) {}
+    })
+    console.log('[physics] 已加载仿生生物物理反射：50ms 自动迈步与卡角微跳脱困')
     if (!cfg.authmePassword) memory.authenticated=true
     else { await sleep(Number(cfg.authmeDelayMs||900)); bot.chat(`/login ${cfg.authmePassword}`) }
   })
@@ -2932,7 +2976,7 @@ function connect() {
     if (/not registered|未注册/.test(s) && cfg.authmeAutoRegister && cfg.authmePassword) bot.chat(`/register ${cfg.authmePassword} ${cfg.authmePassword}`)
   })
   const handlePlayerMessage = async (u, m) => {
-    const masters = Array.isArray(cfg.masters) ? cfg.masters : ['master']
+    const masters = Array.isArray(cfg.masters) ? cfg.masters : ['chaoji34']
     if (!masters.includes(u)) return
     const text = String(m || '').trim()
     console.log(`[Master Command] from ${u}: ${text}`)
