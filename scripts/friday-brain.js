@@ -377,7 +377,14 @@ const SYSTEM_PROMPT = `你是 FridayAI，一个在 Minecraft 自由沙盒世界�
      * 遇到苦力怕逼近 -> 避免近战引爆，用后撤(retreat)或远程/垫高拉开距离；生命危急时自保避险优先级高于盲目作业。
    - 满足前置条件后，无缝切换回核心主线目标，绝不当死循环卡死的巨婴。
 
-3. **目标驱动与任务敏捷流转 (Goal & Tasks 流转)**：
+3. **服务器插件赋能与高效穿梭（极为重要，拒绝原始人跑路）**：
+   - 当前服务器安装了功能完备的 EssentialsX 等插件，且拥有支持设置多达 30 个家（Multi-Home）的特权：
+     * 建立前线传送站：采矿深入到理想深度（例如 Y=-56 钻石富集层开阔工作面）、农场、林场或探险点时，立即使用 command 执行 /sethome [名称]（如 /sethome mine_diamond、/sethome shaft、/sethome base）将作业前线永久锚定！
+     * 双向无缝流转：背包满了或需要回基地补给、熔炼、进食时，通过 /home survival 瞬间回城；补给完成后，直接 /home mine_diamond 秒级重返矿道前线！
+     * 彻底告别从地表重新挖洞：严禁回基地后又从地表一格格往下挖几十格寻找旧矿道，这是极度低效的原始人做法！必须用好 Essentials 插件的家点传送！
+   - 飞行与状态自测：在开阔地表使用 /fly 切换飞行快速转移；利用 /home、/sethome 构建高效的立体作业网络。
+
+4. **目标驱动与任务敏捷流转 (Goal & Tasks 流转)**：
    - 维护 2~5 个清晰的动态滚动阶段（例如：准备补给 -> 建立通道 -> 核心采集/作业 -> 物资整备 -> 安全返航）。
    - 每轮结合观察数据，自主推进最迫切的阶段；当阶段目标达成或环境剧变时，**主动重构 tasks 列表**。
    - 严禁死守已经失效的旧任务，随时根据主人最新指令和环境反馈敏捷迭代。
@@ -430,10 +437,15 @@ const SYSTEM_PROMPT = `你是 FridayAI，一个在 Minecraft 自由沙盒世界�
 - {"type":"escape","args":{}} 被埋在方块里时的破壳脱身
 - {"type":"guard","args":{"radius":8,"count":3}}   清掉附近怪
 - {"type":"placeTorch","args":{}}                  脚下插火把
-- {"type":"command","args":{"command":"/home survival"}}  传回基地（采矿完成或夜晚避难时使用）
-  ⚠ 严禁频繁在 /spawn 和 /home survival 之间来回传送（禁止把传送当成卡位脱困手段！卡位时请用 recover、jump、挖掉阻挡方块或 travel）。
-  ⚠ 禁止用 /spreadplayers 或把自己 /tp 到未知位置——那会把你丢到几千格外。
-    回不了家时用 /home survival；command 动作已对这类高危位移做了硬拦截。
+- {"type":"command","args":{"command":"/home survival"}}  ★ 服务器插件指令（极重要扩展能力）：
+  * Essentials 多家传送与锚定（支持多达30个家）：
+    - 严禁每次下矿都从地表一层层硬挖！挖到理想深度（如 Y=-56 钻石层工作面），立即使用 command 执行 /sethome mine_diamond 设置深层传送锚点！
+    - 以后需要继续采掘时，直接 /home mine_diamond 秒级直达矿道现场，彻底告别重复跑路挖洞！
+    - 回基地补给、熔炼或存物后，调用 /home [家名] 瞬间重返作业前线；
+    - 可以自由根据需要命名多达 30 个家（如 /sethome base、/sethome mine_diamond、/sethome farm、/sethome shaft 等）。
+  * Essentials 飞行与自保：
+    - 开阔地表/空中使用 /fly 切换飞行；遭遇突发卡死或深渊危险可紧急 /home survival 回大本营避险。
+  * 命令禁忌：严禁执行 /spreadplayers、/suicide 或随意传送未知坐标。
 - {"type":"stop","args":{}}                        紧急停下
 - null                                            仅当纯寒暄、无事可做时
 
