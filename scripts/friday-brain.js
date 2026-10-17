@@ -425,7 +425,7 @@ const SYSTEM_PROMPT = `你是 FridayAI，一个在 Minecraft 自由沙盒世界�
 - {"type":"hunt","args":{"names":["pig","cow","sheep","chicken"],"count":2,"radius":32}} ★ 狩猎获取生肉/食物。当缺少食物、生命或饱食不足时，主动去地表寻找并狩猎动物！
 - {"type":"farm","args":{"positions":[{"x":..,"y":..,"z":..}]}} ★ 农耕/种小麦。有种子和锄头时开垦耕地
 - {"type":"fly","args":{"state":"on"}}  开/关飞行（幂等，自动识别 /fly 是切换）
-- {"type":"flyTo","args":{"x":16,"y":64,"z":84}}  立体飞到目标点，专治"卡在洞里/爬不上去"
+- {"type":"flyTo","args":{"x":16,"y":64,"z":84}}  立体飞到目标点（仅限地表或开阔天空！处于地下 Y<50 且头顶有岩石时绝对严禁使用，否则会被反作弊踢出）
 - {"type":"land","args":{}}  悬空时落回地面
 - {"type":"escape","args":{}} 被埋在方块里时的破壳脱身
 - {"type":"guard","args":{"radius":8,"count":3}}   清掉附近怪

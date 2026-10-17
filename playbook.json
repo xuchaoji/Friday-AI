@@ -1,27 +1,406 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-16T15:00:00.000Z",
+  "updatedAt": "2026-10-17T04:27:06.633Z",
   "tactics": [
     {
-      "id": "tactic-water-pocket-bypass",
-      "situation": "下潜或采矿遇含水层/暗流(water near)阻断",
-      "rule": "严禁直接穿水挖掘；先用圆石或泥土封堵出水点，转为垂直方向(如dx=0,dz=1或dx=-1)绕行3格再继续下潜",
-      "successCount": 3,
-      "failCount": 0
-    },
-    {
-      "id": "tactic-starvation-recovery",
-      "situation": "背包无现成食物且饱食度偏低",
-      "rule": "严禁在原地反复eat或开空箱子；立即前往地表开阔区hunt狩猎牛羊猪鸡并用熔炉smelt熟肉，补充到半组食物后再重返矿坑",
+      "id": "tactic-mvb8ltwf",
+      "situation": "需要补充食物，但狩猎结果和背包内容尚未确认，直接在hunt后执行eat可能因没有可吃物品而中断流水线。",
+      "rule": "将狩猎与进食解耦：先执行command传送和扩大半径的hunt，再用status或背包检查确认实际获得了可食物品；只有确认存在熟食或可直接食用物品后才执行eat，否则先继续收集或安排烹饪。",
       "successCount": 1,
-      "failCount": 0
+      "failCount": 0,
+      "learnedAt": "2026-10-16T17:24:05.920Z"
     },
     {
-      "id": "tactic-deep-mining-anticheat",
-      "situation": "在地下(Y<50)实心岩层中需要位移",
-      "rule": "严禁地下使用flyTo或长距离穿墙飞行，会触发反作弊ECONNRESET；地下必须且仅能使用digStair、branchMine或实体步行",
-      "successCount": 5,
-      "failCount": 0
+      "id": "tactic-mvbd4tb6",
+      "situation": "scan 因近距离敌对生物暴露而被主动防御中断，且无法确认可靠的后退坐标。",
+      "rule": "不要在原地重复 scan 或依赖无坐标的盲目 retreat；改用高空飞行绕行至目标区域或安全观察点，落地后再执行较小半径 scan，以先脱离近战威胁再恢复侦察。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T19:30:50.082Z"
+    },
+    {
+      "id": "tactic-mvbd9lo8",
+      "situation": "move 报告 unreachable，且目标附近疑似存在水体或局部地形导致寻路器卡住。",
+      "rule": "不要反复直达同一坐标；先 jump 触发脱困，再向侧方移动 2至4 格作为 waypoint，最后从侧方回切目标，并在到达后立即 scan/inspect 验证障碍类型与当前位置。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T19:34:33.464Z"
+    },
+    {
+      "id": "tactic-mvbdcdfh",
+      "situation": "在无直线阻挡提示下，短距离 move 仅移动极少距离后卡住。",
+      "rule": "不要立即重复同一条直线路径；先执行一次 jump 重置碰撞或贴地状态，再通过相邻侧向 waypoint 绕行，最后重新接近目标并执行后续操作。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T19:36:42.749Z"
+    },
+    {
+      "id": "avoid-mvbe042b",
+      "situation": "执行环境感知动作时收到 bot is not spawned。",
+      "rule": "【禁忌/避坑】先用 status 确认就绪状态；若仍未生成机器人，应执行明确的 spawn/重连动作，确认成功后再重试 scan，不能把 status 成功当作 scan 已恢复。",
+      "successCount": 0,
+      "failCount": 1,
+      "learnedAt": "2026-10-16T19:55:10.355Z"
+    },
+    {
+      "id": "avoid-mvbej1on",
+      "situation": "执行睡眠动作返回bed unavailable，且附近扫描结果中未发现床；当前生命值偏低，需要避免继续盲目尝试睡眠。",
+      "rule": "【禁忌/避坑】睡眠失败后不要重复调用sleep；先扫描并确认床的实际存在与可用位置，或转为寻找/建造临时 shelter，再执行移动、放置床或交互动作。进食只能维持生存，不能视为已解决睡眠障碍。",
+      "successCount": 0,
+      "failCount": 1,
+      "learnedAt": "2026-10-16T20:09:53.735Z"
+    },
+    {
+      "id": "tactic-mvbemm2x",
+      "situation": "需要进行较长距离飞行，直达目标的flyTo曾因路径、净空或地形问题中途落点。",
+      "rule": "长距离飞行不要一次直达；先开启飞行并保持较高安全高度（建议Y≥78），按约20至30格水平距离设置多个中继点，最后仅在已确认有实体方块的着陆点下降。每次flyTo成功不等于已安全着陆，必须检查land结果；若land失败，则继续飞往已知安全落点后再执行扫描或检查。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T20:12:40.137Z"
+    },
+    {
+      "id": "tactic-mvbf0u2y",
+      "situation": "长距离 travel 因路径寻路、地形或地下障碍超时中断，且需要继续前往指定坐标进行侦察。",
+      "rule": "先执行 status 确认当前实际位置，再开启飞行；将长距离目标拆成多个间隔约 50 至 70 格的高空 flyTo 航点，抵达后再执行 inspect 或后续交互，避免单次 travel 长时间卡死。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T20:23:43.690Z"
+    },
+    {
+      "id": "tactic-mvbf4qtn",
+      "situation": "飞行模式下从低空直接飞往较远目标点，出现未抵达目标或水平距离过大的情况。",
+      "rule": "不要直接进行长距离低空直达；先开启飞行并爬升到安全高度，再将长航程拆成多个中短距离水平航点，逐段确认到达，最后再执行降落或后续操作。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T20:26:46.091Z"
+    },
+    {
+      "id": "avoid-mvbfaj7l",
+      "situation": "向下阶梯挖掘(digStair)遇到不可破坏方块基岩(bedrock)中断时",
+      "rule": "【禁忌/避坑】立即停止向下开掘指令，检查背包火把存量（避免无火把空放），并向上回填垫高至安全采矿层（主世界深层建议Y=-53至-58），改为水平分支坑道挖掘(digTunnel)。",
+      "successCount": 0,
+      "failCount": 1,
+      "learnedAt": "2026-10-16T20:31:16.161Z"
+    },
+    {
+      "id": "tactic-mvbfg896",
+      "situation": "高空飞行前往较远目标点时，单段 flyTo 因距离过长或路径控制失效而在中途落地。",
+      "rule": "将长距离飞行拆分为多个约 16 至 25 格的中间航点；每段保持飞行模式开启，并让 flyTo 自动先升至安全高度、水平移动后再调整到目标高度，抵达后再继续下一段。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T20:35:41.898Z"
+    },
+    {
+      "id": "tactic-mvbfp7yr",
+      "situation": "move 在无直线阻挡的情况下发生 pathfinder timeout，角色疑似被水体、碰撞边缘或局部寻路状态卡住。",
+      "rule": "先执行一次 recover 解除局部卡位，再用 status 验证实际位移、落地状态和错误清除；确认恢复后改用较短的中间 waypoint 分段重试，避免立刻重复原长距离 move。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T20:42:41.428Z"
+    },
+    {
+      "id": "tactic-mvbftnvl",
+      "situation": "在未确认飞行权限的环境下执行勘探或移动时，fly 指令回执显示 off 导致 pipeline 中断",
+      "rule": "切勿将未授权的 fly/flyTo 与勘测指令（scan/inspect）混编在同一 pipeline 中；若只需感知环境，应优先就地进行 scan 与 inspect，或改用常规 ground pathfinding 移动",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T20:46:08.674Z"
+    },
+    {
+      "id": "avoid-mvbfveug",
+      "situation": "在水域或近水区域遭遇敌对生物警报时（特别是溺尸/远程威胁）",
+      "rule": "【禁忌/避坑】不要直接依赖传送或盲目探查水边；若在水域旁触发主动防御，应优先在脚下垫高或用方块封堵水体视线建立临时掩体，谨防溺尸投掷三叉戟穿透或远程秒杀。",
+      "successCount": 0,
+      "failCount": 1,
+      "learnedAt": "2026-10-16T20:47:30.280Z"
+    },
+    {
+      "id": "tactic-mvbfytku",
+      "situation": "在复杂地形或地下进行长距离寻路时，由于天然方块阻挡导致 pathfinder timeout 超时卡点",
+      "rule": "当移动管道（pipeline）因寻路超时中断时，应在后续重试或复合动作的首位加入带传送/脱困能力的 recover 动作，先清理或脱离卡点坐标，再衔接挖掘或继续移动指令。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T20:50:09.342Z"
+    },
+    {
+      "id": "tactic-mvbg7ljr",
+      "situation": "地下分支挖掘 (branchMine) 遭遇水流/岩浆安全熔断中断时",
+      "rule": "立即终止沿该方向掘进，改向反方向 (反转 dx/dz 符号) 或转弯90度开辟新的平直分支，避免盲目涉水或被水流冲散道具。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T20:56:58.839Z"
+    },
+    {
+      "id": "tactic-mvbgoxq4",
+      "situation": "采集动作明确返回目标不可达或被阻挡，且继续在原区域尝试缺乏可行路径时。",
+      "rule": "不要原地重复同一采集指令；优先传送至已知安全据点，随后执行 scan 和 status 重建环境认知，再从据点库存、附近资源或新路线重新规划目标。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T21:10:27.772Z"
+    },
+    {
+      "id": "tactic-mvbgqejp",
+      "situation": "合成动作提示未获得物品，且背包被多组方块占满，成品可能因无空槽而掉落在附近。",
+      "rule": "先向附近箱子存入至少一组低优先级材料释放空槽，再立即 collect 拾取附近掉落物，并 scan 检查是否已有目标工作站；确认资源到手后再续接原任务，避免反复合成。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T21:11:36.229Z"
+    },
+    {
+      "id": "avoid-mvbh282z",
+      "situation": "制作动作因 missing ingredient 中断，但尚未确认目标物品是否已存在，也未定位具体缺失材料。",
+      "rule": "【禁忌/避坑】不要用无目标的 hunt 和 collect 处理制作缺料；先读取库存并核对目标物品数量，若目标已满足则跳过制作，否则明确缺失的具体材料后执行定向采集或加工。",
+      "successCount": 0,
+      "failCount": 1,
+      "learnedAt": "2026-10-16T21:20:47.723Z"
+    },
+    {
+      "id": "avoid-mvbh5lii",
+      "situation": "以移动到动物刷新区并获取食物为目标，但 travel 返回 ok=true，同时 arrived=false 或 budgetOut=true。",
+      "rule": "【禁忌/避坑】不要立即执行 hunt、collect 或 eat；必须先检查 travel 的 arrived 字段与当前位置。若未抵达，则续接 travel 或先回到地表；只有抵达目标区域且附近确认存在动物后，才执行狩猎与拾取，食用前再确认背包已有可食物品。",
+      "successCount": 0,
+      "failCount": 1,
+      "learnedAt": "2026-10-16T21:23:25.098Z"
+    },
+    {
+      "id": "avoid-mvbhb76p",
+      "situation": "sleep 因 bed unavailable 中断，且角色生命值偏低，需要选择后续破局动作。",
+      "rule": "【禁忌/避坑】禁止直接盲猎；先执行 scan 与 status，确认附近确有可安全击杀的目标或可用床，并设置止损条件。若未发现目标或生命值低于安全阈值，应优先撤入受保护区域、补给或修复床位，而不是继续战斗。",
+      "successCount": 0,
+      "failCount": 1,
+      "learnedAt": "2026-10-16T21:27:46.465Z"
+    },
+    {
+      "id": "avoid-mvbii544",
+      "situation": "digStair 因 \"water near\" 中断，且计划路径位于水体、河岸或地下含水层附近。",
+      "rule": "【禁忌/避坑】不要原地重试同一楼梯路线。先 scan 定位水体，再对目标通道及左右各至少 2 格、上下至少 2 层做 inspect；若确认邻水，改从远离水体的一侧重新选线，或先以固体方块封堵水源后再分段挖掘。侦察本身不算破局，必须在后续动作中产生位移、封水或改线结果。",
+      "successCount": 0,
+      "failCount": 1,
+      "learnedAt": "2026-10-16T22:01:09.988Z"
+    },
+    {
+      "id": "tactic-mvbikiq9",
+      "situation": "digStair 因临近水体而中止，且当前位置周边地下水分布不明。",
+      "rule": "遇到“water near”中止时，立即停止同向续挖；先 scan，再以 inspect 覆盖故障坐标周围的多个高度层，确认水体边界后横向移动到远离水源的固体边缘，再从新位置规划楼梯或封水施工。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T22:03:00.945Z"
+    },
+    {
+      "id": "tactic-mvbiqfcs",
+      "situation": "在地表或常规矿洞浅层下挖报 undiggable block: bedrock 异常阻挡时",
+      "rule": "不要强行原地重复挖掘（多为领地保护或虚空/保护屏障），应立即执行传送指令 (/home) 或大幅水平位移脱离保护区，回到安全基地重新选址开挖。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T22:07:36.508Z"
+    },
+    {
+      "id": "tactic-mvbismmv",
+      "situation": "楼梯挖掘因 water near 报错中断，且目标方向可能贴近水层或水源。",
+      "rule": "不要立刻沿原方向重试 digStair；先 scan 并 inspect 报错坐标周边的水体分布，确认水源边界后横向退开至少 3 格以上，再选择远离水体的一侧重新规划楼梯方向，或先封堵/绕过水层。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T22:09:19.255Z"
+    },
+    {
+      "id": "tactic-mvbixaya",
+      "situation": "地面 travel 因复杂地形、寻路阻塞或长距离导航而超时，但允许使用飞行能力。",
+      "rule": "立即停止重复地面寻路，切换为“开启飞行→高空净空飞抵目标→落地→重新扫描”；飞行高度应高于目标地表约 12 至 16 格，以绕开水体、树林和地形障碍。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T22:12:57.394Z"
+    },
+    {
+      "id": "avoid-mvbjkyx8",
+      "situation": "gatherExposed 报告矿物不可达或被阻挡，且当前处于地下、生命值偏低或夜间环境。",
+      "rule": "【禁忌/避坑】不要将 scan/inspect 结果直接交给 gatherExposed；先以明确坐标 inspect 确认矿脉与可通行路线，必要时挖掘安全通道并放置火把，再分批采集。若决定撤离，先确认撤离动作实际产生位移并在安全地面完成状态核验；禁止在机器人重同步、busy 状态或未确认落地时继续执行长管线。",
+      "successCount": 0,
+      "failCount": 1,
+      "learnedAt": "2026-10-16T22:31:21.548Z"
+    },
+    {
+      "id": "avoid-mvbjm9aw",
+      "situation": "placeAt 因目标位置无相邻实体参照而失败，且扫描发现附近已有同类工作方块。",
+      "rule": "【禁忌/避坑】不要重复向悬空或无相邻实体的位置放置方块；先 inspect 验证支撑面，并优先直接复用附近已有熔炉。侦察后必须立即执行熔炼或改选有实体底面的坐标，不能把纯扫描视为破局完成。",
+      "successCount": 0,
+      "failCount": 1,
+      "learnedAt": "2026-10-16T22:32:21.656Z"
+    },
+    {
+      "id": "avoid-mvbjwywf",
+      "situation": "箱子交互触发 windowOpen 超时，且目标区域存在多个相邻箱子。",
+      "rule": "【禁忌/避坑】交互超时后先扫描并确认所有容器坐标，再通过明确的目标定位或调整站位逐个重试；不要把 scan/inspect 视为已完成存取操作。",
+      "successCount": 0,
+      "failCount": 1,
+      "learnedAt": "2026-10-16T22:40:41.391Z"
+    },
+    {
+      "id": "tactic-mvbk8a80",
+      "situation": "飞行模式下长距离 flyTo 因地形、路径追踪或单段导航距离过长而中途未抵达目标。",
+      "rule": "将长距离飞行拆成约 20~30 格水平间距的中继航点；每段 flyTo 使用同一安全巡航高度（建议目标 Y≈80），确认每段到达后再继续，最终 land 并 scan。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T22:49:29.280Z"
+    },
+    {
+      "id": "tactic-mvbkctq2",
+      "situation": "长距离连续 flyTo 中途失速或停在距目标较远的位置，且飞行状态可能不稳定。",
+      "rule": "先显式执行 fly(on) 重置并确认飞行状态，再把剩余路线拆成约 20～25 格的短航段，使用侧向绕行航点逐段推进；抵达目标区域后立即 scan 验证位置与周边资源，不要直接重试原长航段。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T22:53:01.178Z"
+    },
+    {
+      "id": "avoid-mvbkwsyo",
+      "situation": "容器交互超时后，扫描或诊断已经确认目标坐标与可挖掘阻挡物。",
+      "rule": "【禁忌/避坑】不要停在侦察阶段；下一动作必须针对诊断结果执行物理修复：清除目标前方的非保护阻挡物，移动到可交互位置，再以已确认的容器坐标重试开箱，并用库存或状态结果验证资源确已取得。",
+      "successCount": 0,
+      "failCount": 1,
+      "learnedAt": "2026-10-16T23:08:33.312Z"
+    },
+    {
+      "id": "avoid-mvbl642u",
+      "situation": "低血量且背包无食物时，附近狩猎可能没有有效目标。",
+      "rule": "【禁忌/避坑】不要把 hunt 返回 ok 视为获得食物；必须检查 killed、hits 或背包食物增量。若 killed=0，应立即停止 collect/eat 链，转为扩大搜索、移动到动物可见区域或获取可直接食用的替代资源，避免原地空转直至死亡。",
+      "successCount": 0,
+      "failCount": 1,
+      "learnedAt": "2026-10-16T23:15:47.622Z"
+    },
+    {
+      "id": "tactic-mvbl7p7d",
+      "situation": "飞行模式开启失败或服务器无法确认飞行状态，但目标位于已登记的家园/传送点附近。",
+      "rule": "立即停止依赖 fly/flyTo，改用已知的 /home <名称> 传送，并在传送后执行 scan 验证坐标、地面状态和周边设施；不要在未发现目标实体时盲目追加 hunt。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T23:17:01.657Z"
+    },
+    {
+      "id": "tactic-mvblb2iq",
+      "situation": "长距离flyTo偏航或落在障碍地形，无法直接抵达目标区域。",
+      "rule": "改用多个短程travel中继推进，单段hop约8至10格；每段后检查arrived与remaining。若出现PARTIAL但仍有progress，可从当前位置重新规划下一段；连续两跳无进展时立即停止，并先扫描或清障，避免直接执行依赖到位的狩猎等后续任务。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T23:19:38.882Z"
+    },
+    {
+      "id": "tactic-mvbllal1",
+      "situation": "执行 move 动作偶发内部空指针（reading 'position'）或复杂地形状况下寻路崩溃",
+      "rule": "立即将单纯的 move 改为分段寻路的 travel（配置合理 hop 与 maxHops），利用其多跳切片容错机制规避单次直接寻路抛错并保证抵达目标点",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T23:27:35.893Z"
+    },
+    {
+      "id": "tactic-mvblr91q",
+      "situation": "digStair 或连续挖掘因 nearby water 中止，且当前位置紧邻地下水体时。",
+      "rule": "立即停止重复原方向挖掘；先沿水体威胁方向的侧向或反向平移约8—12格，再执行半径20左右扫描。仅在拟定挖掘线及其相邻方块确认无水后，才重新规划阶梯矿道。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T23:32:13.838Z"
+    },
+    {
+      "id": "tactic-mvblsr8s",
+      "situation": "digStair 因目标或邻近方块存在水体而中断，且角色生命、饱食充足但尚未确定安全下挖方向。",
+      "rule": "下挖楼梯被水体拦截后，不要在原点连续重试；先沿水体反方向水平撤离约8—12格并扫描20格范围，依据扫描到的水体分布选择与水源距离更大的方向，再开始新的阶梯矿道。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T23:33:24.076Z"
+    },
+    {
+      "id": "tactic-mvblxxio",
+      "situation": "当背包中无食物导致 eat 流程中断时",
+      "rule": "立即调用 hunt 或 forage 动作寻找并获取肉类或植物性食物，补充库存后再执行进食流水线。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T23:37:25.489Z"
+    },
+    {
+      "id": "tactic-mvbm0s79",
+      "situation": "当移动目标点因受保护的建筑围墙或箱子等特殊方块（protectedSkipped）阻挡而导致 move 失败时。",
+      "rule": "不要盲目尝试挖掘受保护的结构方块，应调整寻路终点或采用绕行逻辑，避免因权限或保护机制导致clearArea失效。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-16T23:39:38.565Z"
+    },
+    {
+      "id": "avoid-mvbmj6mi",
+      "situation": "低血量时改用 hunt 获取食物，但搜索范围内没有命中或击杀任何动物。",
+      "rule": "【禁忌/避坑】不得仅凭动作返回 OK 判定狩猎成功；必须检查 killed、hits 和背包增量。若 killed=0 且无食物入包，应立即判定该路线无效，停止重复 hunt，改用已知可访问食物源、扩大搜索范围或优先撤入安全区域。",
+      "successCount": 0,
+      "failCount": 1,
+      "learnedAt": "2026-10-16T23:53:57.066Z"
+    },
+    {
+      "id": "avoid-mvboao1c",
+      "situation": "容器交互超时后，诊断显示路径可达，但容器附近或角色头部空间存在方块阻挡。",
+      "rule": "【禁忌/避坑】不要把 diagnose 成功或 reachable=true 当作危机解除；必须根据 blockers 清理可安全拆除的非保护方块、调整到容器相邻且视线无遮挡的位置，再重试开箱，并以实际取得资源或成功进食作为完成判据。",
+      "successCount": 0,
+      "failCount": 1,
+      "learnedAt": "2026-10-17T00:43:18.960Z"
+    },
+    {
+      "id": "avoid-mvbocf61",
+      "situation": "打开箱子超时后，诊断发现目标箱子不可达或箱体上方存在方块阻挡。",
+      "rule": "【禁忌/避坑】不要把“抵达附近”或“诊断成功”视为破局完成；应先移动到箱子的可交互相邻位置，清除箱体上方可安全破坏的阻挡方块，再重试打开箱子，并以物品进入背包或成功进食作为完成验证。",
+      "successCount": 0,
+      "failCount": 1,
+      "learnedAt": "2026-10-17T00:44:40.777Z"
+    },
+    {
+      "id": "avoid-mvboe6ti",
+      "situation": "低血低饥饿状态下，开启箱子因windowOpen超时而中断，随后仅执行inspect与diagnose。",
+      "rule": "【禁忌/避坑】不要把侦察或诊断成功当作破局完成；箱子交互超时后，应依据诊断结果立即执行实际动作，例如移动到可交互面并重试开启目标箱子，或改走无需破坏受保护方块的替代食物路线，直到获得食物、完成进食或消除实际障碍。",
+      "successCount": 0,
+      "failCount": 1,
+      "learnedAt": "2026-10-17T00:46:03.270Z"
+    },
+    {
+      "id": "avoid-mvbozqn1",
+      "situation": "HP 较低且 Food≤1、背包无食物时，需要紧急补给。",
+      "rule": "【禁忌/避坑】禁止先进行长距离盲飞再批量狩猎；只前往已确认有动物且可安全着陆的位置，落地确认成功后先猎杀 1 只，并检查确有可食用掉落，再立即 eat。若 hunt 返回 killed=0 或背包无食物，应立刻停止后续 eat 与继续赶路，改换已知食物点。",
+      "successCount": 0,
+      "failCount": 1,
+      "learnedAt": "2026-10-17T01:02:48.733Z"
+    },
+    {
+      "id": "avoid-mvbp1k15",
+      "situation": "饥饿值为0、生命垂危，尝试使用传送命令回基地取食。",
+      "rule": "【禁忌/避坑】执行传送命令后必须立即核验坐标是否变化；若未传送，不要把inspect或diagnose当作脱险，应立刻执行实际移动至可达容器、取出可食物并确认入包后再eat。",
+      "successCount": 0,
+      "failCount": 1,
+      "learnedAt": "2026-10-17T01:04:13.481Z"
+    },
+    {
+      "id": "avoid-mvbqs79a",
+      "situation": "动作因 bot is not spawned 失败，但后续状态查询显示 ready=true。",
+      "rule": "【禁忌/避坑】不要把 status 成功视为任务恢复；确认 ready=true 且不再处于冲突动作后，应重新提交原动作或从首个未完成步骤继续执行，并以位移、物品数量或目标完成回执验证结果。",
+      "successCount": 0,
+      "failCount": 1,
+      "learnedAt": "2026-10-17T01:52:56.254Z"
+    },
+    {
+      "id": "tactic-mvbqymyq",
+      "situation": "本地交互目标不可用，继续原地重复操作无法推进，且角色需要快速脱离卡点区域时。",
+      "rule": "停止重复失败交互，先开启飞行，经高空净空路线转移到新的候选区域；落地后立即扫描并检查状态，以确认安全着陆及附近资源，再依据扫描结果继续推进。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-17T01:57:56.546Z"
+    },
+    {
+      "id": "tactic-mvbr2lci",
+      "situation": "阶梯挖掘因近距离水体被安全机制中止，继续沿原方向施工可能引发灌水或受困。",
+      "rule": "立即停止重复挖掘，开启飞行后横向转移至少 24至32 格，再扫描水体与实体地面；只有在目标点无近邻水体且状态确认 onGround=true 后，才关闭飞行并恢复挖掘。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-17T02:01:01.074Z"
+    },
+    {
+      "id": "tactic-mvbwagw8",
+      "situation": "直线分支采矿因前方邻近水体而暂停，继续重复同方向采矿容易反复中断。",
+      "rule": "立即停止重复branchMine，先沿已知安全通道向远离报错水源的方向撤移至少一个扫描半径，再执行scan重新确认水体与矿脉分布；即使travel仅部分到达，只要持续远离危险点并产生净位移，就应从新位置重新规划路线。",
+      "successCount": 1,
+      "failCount": 0,
+      "learnedAt": "2026-10-17T04:27:06.632Z"
     }
   ],
   "microSkills": [
@@ -29,7 +408,561 @@
       "name": "torch_supply_chain",
       "description": "现场就地制作火把补充照明",
       "steps": [
-        {"type": "craftAtomic", "args": {"item": "torch", "count": 16}}
+        {
+          "type": "craftAtomic",
+          "args": {
+            "item": "torch",
+            "count": 16
+          }
+        }
+      ]
+    },
+    {
+      "name": "inspect_then_reroute_mining",
+      "description": "当放置点被占用时，先侦察局部区域，再沿安全替代方向挖掘推进，并在完成后收集掉落物。",
+      "steps": [
+        {
+          "type": "inspect",
+          "args": {
+            "x1": 15,
+            "y1": -57,
+            "z1": 178,
+            "x2": 20,
+            "y2": -54,
+            "z2": 183,
+            "list": true
+          }
+        },
+        {
+          "type": "branchMine",
+          "args": {
+            "dx": -1,
+            "dz": 0,
+            "length": 8,
+            "ores": [
+              "diamond_ore",
+              "deepslate_diamond_ore"
+            ]
+          }
+        },
+        {
+          "type": "collect",
+          "args": {
+            "radius": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "jump_waypoint_unstuck",
+      "description": "用于处理无明显直线阻挡但 move 几乎不产生位移的卡滞。跳跃后先侧向移动，再回到目标点，可兼顾脱困与继续执行管线。",
+      "steps": [
+        {
+          "type": "jump",
+          "args": {
+            "count": 1
+          }
+        },
+        {
+          "type": "move",
+          "args": {
+            "x": 46,
+            "y": 63,
+            "z": 182,
+            "range": 1,
+            "maxDistance": 12
+          }
+        },
+        {
+          "type": "move",
+          "args": {
+            "x": 47,
+            "y": 63,
+            "z": 181,
+            "range": 1,
+            "maxDistance": 12
+          }
+        }
+      ]
+    },
+    {
+      "name": "segmented_flight_recovery",
+      "description": "用于 travel 超时后的分段飞行恢复与目标区域侦察。",
+      "steps": [
+        {
+          "type": "status",
+          "args": {}
+        },
+        {
+          "type": "fly",
+          "args": {
+            "state": "on"
+          }
+        },
+        {
+          "type": "flyTo",
+          "args": {
+            "x": 24,
+            "y": 80,
+            "z": 60
+          }
+        },
+        {
+          "type": "flyTo",
+          "args": {
+            "x": 48,
+            "y": 80,
+            "z": 120
+          }
+        },
+        {
+          "type": "flyTo",
+          "args": {
+            "x": 49,
+            "y": 78,
+            "z": 181
+          }
+        },
+        {
+          "type": "inspect",
+          "args": {
+            "x1": 45,
+            "y1": -64,
+            "z1": 177,
+            "x2": 53,
+            "y2": -48,
+            "z2": 185,
+            "list": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "分段高空巡航",
+      "description": "用于避免长距离单段飞行中断：先确认状态并开启飞行，再以短距离航点逐段推进，抵达终点后执行扫描。",
+      "steps": [
+        {
+          "type": "status",
+          "args": {}
+        },
+        {
+          "type": "fly",
+          "args": {
+            "state": "on"
+          }
+        },
+        {
+          "type": "flyTo",
+          "args": {
+            "x": 49,
+            "y": 82,
+            "z": 145
+          }
+        },
+        {
+          "type": "flyTo",
+          "args": {
+            "x": 49,
+            "y": 82,
+            "z": 165
+          }
+        },
+        {
+          "type": "flyTo",
+          "args": {
+            "x": 49,
+            "y": 82,
+            "z": 181
+          }
+        },
+        {
+          "type": "scan",
+          "args": {
+            "radius": 24
+          }
+        }
+      ]
+    },
+    {
+      "name": "recover_verify_repath",
+      "description": "针对无明显障碍的寻路超时，先进行非传送式脱困并验证状态，再扫描周边以选择短距离中间点重新规划。",
+      "steps": [
+        {
+          "type": "recover",
+          "args": {
+            "allowTeleport": false
+          }
+        },
+        {
+          "type": "status",
+          "args": {}
+        },
+        {
+          "type": "scan",
+          "args": {
+            "radius": 16
+          }
+        }
+      ]
+    },
+    {
+      "name": "ground_local_survey",
+      "description": "无需飞行权限的安全就地全方位感知流程",
+      "steps": [
+        {
+          "type": "status",
+          "args": {}
+        },
+        {
+          "type": "scan",
+          "args": {
+            "radius": 32
+          }
+        }
+      ]
+    },
+    {
+      "name": "recover_and_dig_stair",
+      "description": "应对寻路超时卡点时的标准脱困与破局连招：先恢复移动状态脱离卡死点，再执行阶梯挖掘开辟通路。",
+      "steps": [
+        {
+          "type": "recover",
+          "args": {
+            "allowTeleport": true
+          }
+        },
+        {
+          "type": "digStair",
+          "args": {
+            "dx": 0,
+            "dz": 1,
+            "steps": 6
+          }
+        }
+      ]
+    },
+    {
+      "name": "reverse_branch_mine_on_hazard",
+      "description": "采矿遇水/岩浆中断时反向调头继续挖掘",
+      "steps": [
+        {
+          "type": "branchMine",
+          "args": {
+            "dx": -1,
+            "dz": 0,
+            "length": 8,
+            "ores": [
+              "diamond_ore",
+              "deepslate_diamond_ore",
+              "iron_ore",
+              "coal_ore"
+            ]
+          }
+        },
+        {
+          "type": "status",
+          "args": {}
+        }
+      ]
+    },
+    {
+      "name": "water_abort_scan_inspect_reposition",
+      "description": "挖掘遭遇近水保护中止后，通过扫描、局部方块检查和横向重定位，离开危险水体邻域并为后续改线施工建立安全起点。",
+      "steps": [
+        {
+          "type": "scan",
+          "args": {
+            "radius": 24
+          }
+        },
+        {
+          "type": "inspect",
+          "args": {
+            "x1": -16,
+            "y1": 60,
+            "z1": 102,
+            "x2": -8,
+            "y2": 65,
+            "z2": 114,
+            "list": true
+          }
+        },
+        {
+          "type": "move",
+          "args": {
+            "x": -12,
+            "y": 63,
+            "z": 101,
+            "range": 1,
+            "maxDistance": 16
+          }
+        }
+      ]
+    },
+    {
+      "name": "retreat_and_survey_base",
+      "description": "遇到不可抗力阻挡时一键撤退回基地并快速扫描周围环境",
+      "steps": [
+        {
+          "type": "command",
+          "args": {
+            "command": "/home survival"
+          }
+        },
+        {
+          "type": "status",
+          "args": {}
+        },
+        {
+          "type": "scan",
+          "args": {
+            "radius": 16
+          }
+        }
+      ]
+    },
+    {
+      "name": "water_abort_recon_reposition",
+      "description": "当挖掘因邻水保护中断时，先用局部侦察验证水体范围，再横向撤离至非临水位置，避免对同一危险方向重复发起楼梯挖掘。",
+      "steps": [
+        {
+          "type": "scan",
+          "args": {
+            "radius": 20
+          }
+        },
+        {
+          "type": "inspect",
+          "args": {
+            "x1": -17,
+            "y1": 60,
+            "z1": 112,
+            "x2": -13,
+            "y2": 64,
+            "z2": 116,
+            "list": true
+          }
+        },
+        {
+          "type": "move",
+          "args": {
+            "x": -10,
+            "y": 63,
+            "z": 108,
+            "range": 1,
+            "maxDistance": 16
+          }
+        }
+      ]
+    },
+    {
+      "name": "fly_bypass_travel_timeout",
+      "description": "当地面 travel 超时后，使用高空净空巡航绕过寻路障碍，并在目标区域安全落地后重新获取环境信息。",
+      "steps": [
+        {
+          "type": "fly",
+          "args": {
+            "state": "on"
+          }
+        },
+        {
+          "type": "flyTo",
+          "args": {
+            "x": 49,
+            "y": 76,
+            "z": 181
+          }
+        },
+        {
+          "type": "land",
+          "args": {}
+        },
+        {
+          "type": "scan",
+          "args": {
+            "radius": 32
+          }
+        }
+      ]
+    },
+    {
+      "name": "segmented_high_altitude_flyto",
+      "description": "通过高空短距离中继航点替代单段远距离 flyTo，降低飞行导航中断概率；落点后立即扫描确认资源与环境。",
+      "steps": [
+        {
+          "type": "fly",
+          "args": {
+            "state": "on"
+          }
+        },
+        {
+          "type": "flyTo",
+          "args": {
+            "x": 18,
+            "y": 80,
+            "z": 145
+          }
+        },
+        {
+          "type": "flyTo",
+          "args": {
+            "x": 35,
+            "y": 80,
+            "z": 163
+          }
+        },
+        {
+          "type": "flyTo",
+          "args": {
+            "x": 49,
+            "y": 80,
+            "z": 181
+          }
+        },
+        {
+          "type": "land",
+          "args": {}
+        },
+        {
+          "type": "scan",
+          "args": {
+            "radius": 32
+          }
+        }
+      ]
+    },
+    {
+      "name": "robust_travel_and_scan",
+      "description": "稳健分段移动到目标点并立即扫描周边关键资源",
+      "steps": [
+        {
+          "type": "travel",
+          "args": {
+            "x": -16,
+            "y": 64,
+            "z": 108,
+            "hop": 8,
+            "maxHops": 3
+          }
+        },
+        {
+          "type": "scan",
+          "args": {
+            "radius": 16
+          }
+        }
+      ]
+    },
+    {
+      "name": "water_abort_relocate_scan",
+      "description": "地下阶梯挖掘因邻水中止后，横向撤离至更安全位置并扫描水体分布，为改线提供依据。",
+      "steps": [
+        {
+          "type": "travel",
+          "args": {
+            "x": 62,
+            "y": 63,
+            "z": 180,
+            "hop": 8,
+            "maxHops": 4
+          }
+        },
+        {
+          "type": "scan",
+          "args": {
+            "radius": 20
+          }
+        }
+      ]
+    },
+    {
+      "name": "relocate_scan_after_water_abort",
+      "description": "遇到 water near 导致阶梯挖掘中断时，先重定位至远离已知水源的一侧并扫描，再决定新的下挖方向。",
+      "steps": [
+        {
+          "type": "travel",
+          "args": {
+            "x": 72,
+            "y": 64,
+            "z": 181,
+            "hop": 8,
+            "maxHops": 2
+          }
+        },
+        {
+          "type": "scan",
+          "args": {
+            "radius": 20
+          }
+        }
+      ]
+    },
+    {
+      "name": "procure_food_pipeline",
+      "description": "当食物耗尽时，自动执行狩猎以补充肉类储备的复合动作",
+      "steps": [
+        {
+          "type": "hunt",
+          "args": {
+            "names": [
+              "pig",
+              "cow",
+              "sheep",
+              "chicken"
+            ],
+            "count": 1,
+            "radius": 32
+          }
+        }
+      ]
+    },
+    {
+      "name": "bypass_protected_block_move",
+      "description": "当遇到目标点有受保护方块挡路时，避免直接强行清除，改用安全路径规划或调整目标坐标。",
+      "steps": [
+        {
+          "type": "move",
+          "args": {
+            "x": -15,
+            "y": 64,
+            "z": 107,
+            "range": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "air_relocate_land_scan",
+      "description": "在当前区域的关键交互不可用时，通过飞行完成远距离重定位，落地后扫描资源并核验角色状态。",
+      "steps": [
+        {
+          "type": "fly",
+          "args": {
+            "state": "on"
+          }
+        },
+        {
+          "type": "flyTo",
+          "args": {
+            "x": 49,
+            "y": 120,
+            "z": 181
+          }
+        },
+        {
+          "type": "land",
+          "args": {}
+        },
+        {
+          "type": "scan",
+          "args": {
+            "radius": 32
+          }
+        },
+        {
+          "type": "status",
+          "args": {}
+        }
       ]
     }
   ]

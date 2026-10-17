@@ -20,5 +20,6 @@ while true; do
     sleep 3
   fi
 
-  sleep 15
+  # 3. 检查 watchdog 自身单例
+  sleep 10
 done
