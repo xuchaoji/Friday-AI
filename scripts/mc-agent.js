@@ -1453,8 +1453,8 @@ async function act(action = {}, parentToken = null) {
 
     const centerX = (x1 + x2) / 2, centerZ = (z1 + z2) / 2
     const distToCenter = Math.hypot(bot.entity.position.x - centerX, bot.entity.position.z - centerZ)
-    if (distToCenter > 18) {
-      throw new EnvironmentError(`距离待清理区域过远(${Math.round(distToCenter)}格)，严禁隔空挥手！请先使用 travel 或 flyTo 赶往施工区。`)
+    if (distToCenter > 6) {
+      throw new EnvironmentError(`距离待清理区域过远(${Math.round(distToCenter)}格 > 6格)，严禁隔空挥手！请先靠近至 4 格以内再执行挖掘。`)
     }
 
     // 若当前距离目标区域中心稍远，先统一寻路走近一次，避免逐块触发寻路
